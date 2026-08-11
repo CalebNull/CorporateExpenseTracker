@@ -91,3 +91,19 @@ class ExpenseRequest:
 
     def mark_paid(self):
         self._transition("paid")
+
+    @classmethod
+    def from_item(cls, item: dict) -> "ExpenseRequest":
+        request = cls(
+            request_id=item["request_id"],
+            employee_id=item["employee_id"],
+            department=item["department"],
+            category=item["category"],
+            amount=float(item["amount"]),
+            description=item.get("description", ""),
+        )
+        request._status = item.get("status")
+        request._date_submitted = item.get("date_submitted")
+        request._date_decided = item.get("date_decided")
+        request._approver_id = item.get("approver_id")
+        return request

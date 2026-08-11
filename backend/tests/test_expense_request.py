@@ -44,3 +44,21 @@ def test_mark_paid_requires_approved_status():
     req.submit()
     with pytest.raises(ValueError):
         req.mark_paid()
+
+def test_from_item_reconstructs_state():
+    item = {
+        "request_id": "r1",
+        "employee_id": "emp1",
+        "department": "Engineering",
+        "category": "Travel",
+        "amount": 500.0,
+        "description": "Trip",
+        "status": "submitted",
+        "date_submitted": "2026-08-01T00:00:00+00:00",
+        "date_decided": None,
+        "approver_id": None,
+    }
+    request = ExpenseRequest.from_item(item)
+    assert request.status == "submitted"
+    assert request.request_id == "r1"
+    assert request.date_submitted == "2026-08-01T00:00:00+00:00"
