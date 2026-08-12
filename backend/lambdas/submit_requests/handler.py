@@ -4,12 +4,13 @@ from decimal import Decimal
 
 import boto3
 
-from models.audit_log import *
-from models.expense_request import *
+from models.expense_request import ExpenseRequest
+from models.audit_log import AuditLogEntry
 
 dynamodb = boto3.resource("dynamodb")
 requests_table = dynamodb.Table("ExpenseRequests")
 audit_table = dynamodb.Table("AuditLog")
+
 
 def handler(event, context):
     body = json.loads(event["body"])
@@ -56,5 +57,5 @@ def handler(event, context):
             "request_id": request.request_id,
             "status": request.status,
             "date_submitted": request.date_submitted,
-        })
+        }),
     }
