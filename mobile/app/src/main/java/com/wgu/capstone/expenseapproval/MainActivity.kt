@@ -6,11 +6,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.wgu.capstone.expenseapproval.ui.navigation.Routes
 import com.wgu.capstone.expenseapproval.ui.theme.ExpenseApprovalAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,8 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ExpenseApprovalAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    AppNavHost(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -31,17 +35,29 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun AppNavHost(modifier: Modifier = Modifier) {
+    val navController: NavHostController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = Routes.HOME, modifier = modifier) {
+        composable(Routes.HOME) {
+            PlaceholderScreen("Home") { navController.navigate(Routes.SUBMIT_REQUEST) }
+        }
+        composable(Routes.SUBMIT_REQUEST) {
+            PlaceholderScreen("Submit Request") { navController.navigate(Routes.REQUEST_LIST) }
+        }
+        composable(Routes.REQUEST_LIST) {
+            PlaceholderScreen("Request List") { navController.navigate(Routes.REPORTS) }
+        }
+        composable(Routes.REPORTS) {
+            PlaceholderScreen("Reports") { }
+        }
+    }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    ExpenseApprovalAppTheme {
-        Greeting("Android")
+fun PlaceholderScreen(name: String, onNext: () -> Unit) {
+    Text(text = "$name screen placeholder")
+    Button(onClick = onNext) {
+        Text("Next")
     }
 }
