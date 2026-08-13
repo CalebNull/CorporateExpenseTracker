@@ -6,6 +6,7 @@ import boto3
 from models.audit_log import AuditLogEntry
 from models.expense_request import ExpenseRequest
 from models.user import FinanceStaff
+from auth import verify_role, UnauthorizedError
 
 dynamodb = boto3.resource("dynamodb")
 requests_table = dynamodb.Table("ExpenseRequests")
@@ -21,6 +22,10 @@ def handler(event, context):
         return {"statusCode": 404, "body": json.dumps({"error": "Request not found"})}
 
     request = ExpenseRequest.from_item(item)
+    try:
+        verify_role(finance_user_id, "finance")
+    except UnauthorizedError as e:
+        return {"statusCode": 403, "body": json.dumps({"error": str(e)})}
     finance_staff = FinanceStaff(finance_user_id, "", "", request.department)
 
     try:

@@ -42,6 +42,12 @@ def dynamodb_tables():
             AttributeDefinitions=[{"AttributeName": "audit_id", "AttributeType": "S"}],
             BillingMode="PAY_PER_REQUEST",
         )
+        client.create_table(
+            TableName="Users",
+            KeySchema=[{"AttributeName": "user_id", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "user_id", "AttributeType": "S"}],
+            BillingMode="PAY_PER_REQUEST",
+        )
         yield
 
 def seed_request(status="submitted", department="Engineering", category="Travel", amount=500.0):
@@ -69,6 +75,13 @@ def seed_budget(department="Engineering", category="Travel", allocated=1000.0, s
         "fiscal_period": "2026-Q3",
     })
 
+def seed_approver(user_id="appr1"):
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table("Users")
+    table.put_item(Item={
+        "user_id": user_id, "name": "Approver", "email": "appr@example.com",
+        "department": "Engineering", "role": "approver",
+    })
+
 def make_event(request_id: str, approver_id: str, decision: str):
     return {
         "pathParameters": {"request_id": request_id},
@@ -78,6 +91,7 @@ def make_event(request_id: str, approver_id: str, decision: str):
 def test_approve_success(dynamodb_tables):
     seed_request()
     seed_budget()
+    seed_approver()
 
     response = handler(make_event("r1", "appr1", "approve"), None)
 
@@ -89,6 +103,7 @@ def test_approve_success(dynamodb_tables):
 def test_approve_deducts_budget(dynamodb_tables):
     seed_request(amount = 300.0)
     seed_budget(allocated=1000.0, spent=200.0)
+    seed_approver()
 
     handler(make_event("r1", "appr1", "approve"), None)
 
@@ -99,6 +114,7 @@ def test_approve_deducts_budget(dynamodb_tables):
 def test_approve_writes_audit_log(dynamodb_tables):
     seed_request()
     seed_budget()
+    seed_approver()
 
     handler(make_event("r1", "appr1", "approve"), None)
 
@@ -108,6 +124,7 @@ def test_approve_writes_audit_log(dynamodb_tables):
 
 def test_reject_success(dynamodb_tables):
     seed_request()
+    seed_approver()
 
     response = handler(make_event("r1", "appr1", "reject"), None)
 
@@ -117,6 +134,7 @@ def test_reject_success(dynamodb_tables):
 def test_reject_does_not_touch_budget(dynamodb_tables):
     seed_request()
     seed_budget(spent=0.0)
+    seed_approver()
 
     handler(make_event("r1", "appr1", "reject"), None)
 
@@ -127,6 +145,7 @@ def test_reject_does_not_touch_budget(dynamodb_tables):
 def test_approve_insufficient_budget_returns_400(dynamodb_tables):
     seed_request(amount=900.0)
     seed_budget(allocated=1000.0, spent=800.0) # only 200.0 remaining
+    seed_approver()
 
     response = handler(make_event("r1", "appr1", "approve"), None)
 
@@ -134,6 +153,7 @@ def test_approve_insufficient_budget_returns_400(dynamodb_tables):
 
 def test_approve_missing_budget_returns_404(dynamodb_tables):
     seed_request()
+    seed_approver()
     # no budget seeded
 
     response = handler(make_event("r1", "appr1", "approve"), None)
@@ -143,6 +163,7 @@ def test_approve_missing_budget_returns_404(dynamodb_tables):
 
 def test_unknown_decision_returns_400(dynamodb_tables):
     seed_request()
+    seed_approver()
 
     response = handler(make_event("r1", "appr1", "maybe"), None)
 
@@ -158,6 +179,7 @@ def test_request_not_found_returns_404(dynamodb_tables):
 def test_cannot_approve_already_approved_request(dynamodb_tables):
     seed_request(status="approved")
     seed_budget()
+    seed_approver()
 
     response = handler(make_event("r1", "appr1", "approve"), None)
 

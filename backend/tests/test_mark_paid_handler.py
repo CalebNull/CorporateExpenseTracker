@@ -29,6 +29,12 @@ def dynamodb_tables():
             AttributeDefinitions=[{"AttributeName": "audit_id", "AttributeType": "S"}],
             BillingMode="PAY_PER_REQUEST",
         )
+        client.create_table(
+            TableName="Users",
+            KeySchema=[{"AttributeName": "user_id", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "user_id", "AttributeType": "S"}],
+            BillingMode="PAY_PER_REQUEST",
+        )
         yield
 
 def seed_request(status="approved", amount=500.0):
@@ -46,6 +52,13 @@ def seed_request(status="approved", amount=500.0):
         "approver_id": "appr1",
     })
 
+def seed_finance_user(user_id="fin1"):
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table("Users")
+    table.put_item(Item={
+        "user_id": user_id, "name": "Finance", "email": "fin@example.com",
+        "department": "Finance", "role": "finance",
+    })
+
 def make_event(request_id: str, finance_user_id: str):
     return {
         "pathParameters": {"request_id": request_id},
@@ -54,6 +67,7 @@ def make_event(request_id: str, finance_user_id: str):
 
 def test_mark_paid_success(dynamodb_tables):
     seed_request(status="approved")
+    seed_finance_user()
 
     response = handler(make_event("r1", "fin1"), None)
 
@@ -62,6 +76,7 @@ def test_mark_paid_success(dynamodb_tables):
 
 def test_mark_paid_writes_audit_log(dynamodb_tables):
     seed_request(status="approved")
+    seed_finance_user()
 
     handler(make_event("r1", "fin1"), None)
 
@@ -71,6 +86,7 @@ def test_mark_paid_writes_audit_log(dynamodb_tables):
 
 def test_mark_paid_updates_dynamodb(dynamodb_tables):
     seed_request(status="approved")
+    seed_finance_user()
 
     handler(make_event("r1", "fin1"), None)
 
@@ -81,6 +97,7 @@ def test_mark_paid_updates_dynamodb(dynamodb_tables):
 
 def test_mark_paid_rejects_submitted_request(dynamodb_tables):
     seed_request(status="submitted")
+    seed_finance_user()
 
     response = handler(make_event("r1", "fin1"), None)
 
@@ -89,6 +106,7 @@ def test_mark_paid_rejects_submitted_request(dynamodb_tables):
 
 def test_mark_paid_rejects_already_paid_request(dynamodb_tables):
     seed_request(status="paid")
+    seed_finance_user()
 
     response = handler(make_event("r1", "fin1"), None)
 

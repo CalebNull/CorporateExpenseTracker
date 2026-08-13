@@ -7,6 +7,7 @@ import boto3
 from models import Approver, Budget
 from models.audit_log import AuditLogEntry
 from models.expense_request import ExpenseRequest
+from auth import *
 
 dynamodb = boto3.resource("dynamodb")
 requests_table = dynamodb.Table("ExpenseRequests")
@@ -24,6 +25,10 @@ def handler(event, context):
         return {"statusCode": 404, "body": json.dumps({"error": "Request not found"})}
 
     request = ExpenseRequest.from_item(item)
+    try:
+        verify_role(approver_id, "approver")
+    except UnauthorizedError as e:
+        return {"statusCode": 403, "body": json.dumps({"error": str(e)})}
     approver = Approver(approver_id, "", "", request.department)
 
     try:
