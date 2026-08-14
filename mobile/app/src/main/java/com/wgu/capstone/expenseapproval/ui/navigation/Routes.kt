@@ -1,6 +1,7 @@
 package com.wgu.capstone.expenseapproval.ui.navigation
 
 object Routes {
+    const val LOGIN = "login"
     const val HOME = "home"
     const val SUBMIT_REQUEST = "submit_request"
     const val REQUEST_LIST = "request_list"
