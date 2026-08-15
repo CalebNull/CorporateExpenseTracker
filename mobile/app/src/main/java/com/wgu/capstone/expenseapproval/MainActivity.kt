@@ -16,7 +16,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wgu.capstone.expenseapproval.ui.navigation.Routes
+import com.wgu.capstone.expenseapproval.ui.screens.home.HomeScreen
 import com.wgu.capstone.expenseapproval.ui.screens.login.LoginScreen
+import com.wgu.capstone.expenseapproval.ui.screens.reports.ReportsScreen
+import com.wgu.capstone.expenseapproval.ui.screens.requestdetail.RequestDetailScreen
+import com.wgu.capstone.expenseapproval.ui.screens.requestlist.RequestListScreen
 import com.wgu.capstone.expenseapproval.ui.theme.ExpenseApprovalAppTheme
 import com.wgu.capstone.expenseapproval.ui.screens.submit.SubmitRequestScreen
 
@@ -51,22 +55,33 @@ fun AppNavHost(modifier: Modifier = Modifier) {
             )
         }
         composable(Routes.HOME) {
-            PlaceholderScreen("Home") { navController.navigate(Routes.SUBMIT_REQUEST) }
+            HomeScreen(
+                onSubmitRequest = { navController.navigate(Routes.SUBMIT_REQUEST) },
+                onViewRequests = { navController.navigate(Routes.REQUEST_LIST) },
+                onViewReports = { navController.navigate(Routes.REPORTS ) },
+            )
         }
         composable(Routes.SUBMIT_REQUEST) {
             SubmitRequestScreen(
                 onSubmitted = { requestId -> navController.navigate(Routes.requestDetail(requestId)) }
             )
         }
-        composable(Routes.REQUEST_LIST) { backStackEntry ->
-            PlaceholderScreen("Request List") { navController.navigate(Routes.REPORTS) }
+        composable(Routes.REQUEST_LIST) {
+            RequestListScreen(
+                onRequestClick = { requestId ->
+                    navController.navigate(Routes.requestDetail(requestId))
+                }
+            )
         }
         composable(Routes.REQUEST_DETAIL) { backStackEntry ->
             val requestId = backStackEntry.arguments?.getString("requestId") ?: ""
-            PlaceholderScreen("Request Detail ($requestId)") { }
+            RequestDetailScreen(
+                requestId = requestId,
+                onDeleted = { navController.popBackStack() }
+            )
         }
         composable(Routes.REPORTS) {
-            PlaceholderScreen("Reports") { }
+            ReportsScreen()
         }
     }
 }

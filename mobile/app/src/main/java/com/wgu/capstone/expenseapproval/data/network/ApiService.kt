@@ -23,7 +23,7 @@ interface ApiService {
 
     @GET("requests")
     suspend fun searchRequests(
-        @Query("employee_id") employee_id: String? = null,
+        @Query("employee_id") employeeId: String? = null,
         @Query("status") status: String? = null,
         @Query("department") department: String? = null,
     ): List<ExpenseRequest>
