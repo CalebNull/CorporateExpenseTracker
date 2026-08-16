@@ -7,9 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    // TODO: replace with deployed API Gateway invoke URL
-    // using a placeholder until I deploy application
-    private const val BASE_URL = "https://REPLACE-WITH-API-GATEWAY-URL.execute-api.us-east-1.amazonaws.com/prod/"
+    // API URL
+    private const val BASE_URL = "https://8azqimwfai.execute-api.us-east-2.amazonaws.com/prod/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

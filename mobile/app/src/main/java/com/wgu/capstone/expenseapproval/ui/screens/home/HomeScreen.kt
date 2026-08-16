@@ -16,6 +16,7 @@ fun HomeScreen (
     onSubmitRequest: () -> Unit,
     onViewRequests: () -> Unit,
     onViewReports: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -32,6 +33,9 @@ fun HomeScreen (
         }
         Button(onClick = onViewReports, modifier = Modifier.fillMaxWidth()) {
             Text(text = "Spending Reports")
+        }
+        Button(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
+            Text(text = "Log Out")
         }
     }
 }
