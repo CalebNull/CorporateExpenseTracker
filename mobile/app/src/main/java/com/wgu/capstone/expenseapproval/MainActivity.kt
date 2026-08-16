@@ -60,10 +60,7 @@ fun AppNavHost() {
                     title = { Text("Expense Approval") },
                     navigationIcon = {
                         IconButton(onClick = {
-                            navController.navigate(Routes.HOME) {
-                                popUpTo(Routes.HOME) { inclusive = true }
-                                launchSingleTop = true
-                            }
+                            navController.popBackStack()
                         }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Home")
                         }
