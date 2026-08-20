@@ -13,16 +13,28 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.wgu.capstone.expenseapproval.data.models.ExpenseRequest
 
 @Composable
 fun RequestListScreen(
     onRequestClick: (String) -> Unit,
+    navController: NavHostController,
     viewModel: RequestListViewModel = viewModel(),
 ) {
+    val shouldRefresh = navController.currentBackStackEntry?.savedStateHandle?.get<Boolean>("shouldRefresh")
+
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh == true) {
+            viewModel.search()
+            navController.currentBackStackEntry?.savedStateHandle?.set("shouldRefresh", false)
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -66,7 +78,7 @@ fun RequestListScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(viewModel.results) { request ->
-                    RequestRow(request = request,onClick = {
+                    RequestRow(request = request, onClick = {
                         onRequestClick(request.requestId)
                     })
                 }

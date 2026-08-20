@@ -108,14 +108,18 @@ fun AppNavHost() {
                 RequestListScreen(
                     onRequestClick = { requestId ->
                         navController.navigate(Routes.requestDetail(requestId))
-                    }
+                    },
+                    navController = navController,
                 )
             }
             composable(Routes.REQUEST_DETAIL) { backStackEntry ->
                 val requestId = backStackEntry.arguments?.getString("requestId") ?: ""
                 RequestDetailScreen(
                     requestId = requestId,
-                    onDeleted = { navController.popBackStack() }
+                    onDeleted = {
+                        navController.previousBackStackEntry?.savedStateHandle?.set("shouldRefresh", true)
+                        navController.popBackStack()
+                    }
                 )
             }
             composable(Routes.REPORTS) {
