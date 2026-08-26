@@ -5,6 +5,8 @@ REGION="us-east-2"
 ACCOUNT_ID="717279721998"
 ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/service-role/submit_requests-role-5sn0b6jq"
 
+aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+
 FUNCTIONS=(
   "submit_requests"
   "approve_reject"
